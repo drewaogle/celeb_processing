@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import cv2
 #import vdms
 import sys
@@ -10,6 +11,7 @@ import unittest
 import numpy as np
 import csv
 import face_recognition
+import io
 
 import glob
 
@@ -68,6 +70,8 @@ def get_descriptors(name,imagePath , outputPath,blob_array):
             print(f"failed to resize {image.shape()}")
         return
 
+    ok, jpg_cv2 = cv2.imencode( ".jpg",image)
+    jpg_buffer = io.BytesIO(jpg_cv2).getvalue()
     rgb   = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     boxes = face_recognition.face_locations(rgb, model="hog")
@@ -141,7 +145,7 @@ def get_descriptors(name,imagePath , outputPath,blob_array):
 
 #   # t[0]["AddImage"]["properties"]["keypoints"] = f"10 {p['lefteye_x']} {p['lefteye_y']} {p['righteye_x']} {p['righteye_y']} {p['nose_x']} {p['nose_y']} {p['leftmouth_x']} {p['leftmouth_y']} {p['rightmouth_x']} {p['rightmouth_y']}"
     #t[0]["AddImage"]["properties"]["keypoints"] = keypoints
-    (res,blo) = con.query(t,[rawImage,float_array.tobytes()])
+    (res,blo) = con.query(t,[jpg_buffer,float_array.tobytes()])
     if isinstance(res,dict) and res['status'] < 0:
         print("{}".format(res))
         sys.exit(0)
